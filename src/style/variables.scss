@@ -1,0 +1,99 @@
+// 输入框占位符文本颜色
+$uni-input-color-placeholder: #999;
+
+// 4个方向的底部安全区 函数
+@mixin safe-area-inset($direction: bottom) {
+  padding-#{$direction}: 0;
+  padding-#{$direction}: constant(safe-area-inset-#{$direction});
+  padding-#{$direction}: env(safe-area-inset-#{$direction});
+}
+
+// scss混入，为了少写几行#ifndef
+@mixin flex($direction: row) {
+  /* #ifndef APP-NVUE */
+  display: flex;
+  /* #endif */
+  flex-direction: $direction;
+}
+
+// 渐变颜色
+@mixin linear-gradient($angle: 90deg, $startColor: #00e297, $endColor: #21d6dd) {
+  background-image: linear-gradient($angle, $startColor, $endColor);
+}
+
+// 底部悬浮按钮
+@mixin fixed-bottom($height: 88rpx, $useShadow: true, $useStatic: false, $useSafe: true) {
+  @if ($useSafe) {
+    @include safe-area-inset(bottom);
+  }
+
+  @include fixed-top($height, $useShadow, $useStatic);
+
+  > .wrapper {
+    @if $useStatic == false {
+      top: auto;
+      bottom: 0;
+
+      @if ($useSafe) {
+        @include safe-area-inset(bottom);
+      }
+    }
+
+    .btn {
+      height: $height;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36rpx;
+      position: relative;
+    }
+    .btn-cancel {
+      width: 200rpx;
+      color: #333;
+      background-color: #fff;
+
+      &[disabled]:not([data-disabled-color]) {
+        background-color: #bcbcbc;
+      }
+    }
+    .btn-confirm {
+      flex: 1;
+      color: #fff;
+      background-color: #00a4ac;
+
+      &[disabled]:not([data-disabled-color]) {
+        background-color: #bcbcbc;
+      }
+    }
+  }
+}
+
+// 顶部悬浮
+@mixin fixed-top($height: 88rpx, $useShadow: true, $useStatic: false) {
+  > .wrapper {
+    @if $useStatic == false {
+      position: fixed;
+      left: 0;
+      right: 0;
+      top: 0;
+      z-index: 100;
+    }
+    min-height: $height;
+    display: flex;
+    align-items: center;
+    background-color: #fff;
+    box-sizing: content-box;
+    @if $useShadow {
+      box-shadow: 0 0 14rpx rgba(0, 0, 0, 0.15);
+    }
+  }
+
+  .placeholder {
+    @if $useStatic == false {
+      display: block;
+      height: $height;
+    } @else {
+      display: none;
+    }
+  }
+}

@@ -1,0 +1,12 @@
+---
+description: 小程序 SCSS 样式规则
+globs:
+  - "src/**/*.vue"
+  - "src/**/*.scss"
+  - "miniprogram/src/**/*.vue"
+  - "miniprogram/src/**/*.scss"
+  - "frontend/miniprogram/src/**/*.vue"
+  - "frontend/miniprogram/src/**/*.scss"
+---
+
+开发或修改小程序页面、组件样式时，先读取 `.ai/rules/README.md`，再按其中任务索引选择最小规则集合。

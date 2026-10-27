@@ -1,0 +1,18 @@
+---
+description: 小程序 Script 注释与业务分块规范
+globs:
+  - "src/**/*.vue"
+  - "src/hooks/**/*.ts"
+  - "src/utils/**/*.ts"
+  - "src/store/**/*.ts"
+  - "miniprogram/src/**/*.vue"
+  - "miniprogram/src/hooks/**/*.ts"
+  - "miniprogram/src/utils/**/*.ts"
+  - "miniprogram/src/store/**/*.ts"
+  - "frontend/miniprogram/src/**/*.vue"
+  - "frontend/miniprogram/src/hooks/**/*.ts"
+  - "frontend/miniprogram/src/utils/**/*.ts"
+  - "frontend/miniprogram/src/store/**/*.ts"
+---
+
+开发或修改小程序页面、组件、hooks、utils、store 中的 `<script>` 逻辑时，先读取 `.ai/rules/README.md`，再按其中任务索引选择最小规则集合。

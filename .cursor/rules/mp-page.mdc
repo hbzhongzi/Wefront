@@ -1,0 +1,9 @@
+---
+description: 小程序页面实现规则
+globs:
+  - "src/pages/**/*.vue"
+  - "miniprogram/src/pages/**/*.vue"
+  - "frontend/miniprogram/src/pages/**/*.vue"
+---
+
+开发或修改小程序页面 `.vue` 文件时，先读取 `.ai/rules/README.md`，再按其中任务索引选择最小规则集合。

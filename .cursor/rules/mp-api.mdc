@@ -1,0 +1,9 @@
+---
+description: 小程序接口模块规则
+globs:
+  - "src/api/**/*"
+  - "miniprogram/src/api/**/*"
+  - "frontend/miniprogram/src/api/**/*"
+---
+
+小程序接口/API 开发或修改时，先读取 `.ai/rules/README.md`，再按其中任务索引选择最小规则集合。
