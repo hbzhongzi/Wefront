@@ -2,12 +2,13 @@
 
 `docs/` 只保存微信小程序的开发、构建、部署、运行和故障处理文档。框架精简、架构调整和优化记录统一放在 [`doce/`](../doce/)。
 
-## 阅读顺序
+## 文档索引
 
-1. [快速参考](./quick-reference.md)：查看环境变量、公共能力、代码入口和常用命令。
-2. [构建与处理规范](./framework-handling.md)：执行开发构建、生产构建、微信开发者工具导入和故障排查。
-3. [框架优化总览](../doce/framework-overview.md)：了解精简后的目录、启动链路和模块边界。
-4. [精简方案与落地结果](../doce/framework-slimming-plan.md)：查看已删除模块和后续优化策略。
+- [快速参考](./quick-reference.md)：源码入口索引。
+- [构建与处理规范](./framework-handling.md)：环境配置、命令、产物与故障处理的唯一操作说明。
+- [框架总览](../doce/framework-overview.md)：当前架构和模块边界。
+- [精简记录](../doce/framework-slimming-plan.md)：保留已移除能力及历史改动，不重复构建说明。
+- [整体排查与优化建议](../doce/framework-optimization-audit.md)：问题状态、整改优先级和验收清单。
 
 ## 当前平台
 

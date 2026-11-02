@@ -5,31 +5,50 @@ export function getLastPage() {
   return pageList[pageList.length - 1]
 }
 
-export function ensureDecodeURIComponent(url: string) {
-  if (url.startsWith('%')) {
-    return ensureDecodeURIComponent(decodeURIComponent(url))
+/** 安全解码单个路由参数；遇到格式错误时保留原值，避免中断页面跳转。 */
+export function ensureDecodeURIComponent(value: string): string {
+  try {
+    return decodeURIComponent(value.replace(/\+/g, ' '))
   }
-  return url
+  catch {
+    return value
+  }
 }
 
-export function parseUrlToObj(url: string) {
-  const [path, queryStr] = url.split('?')
+/** 将小程序路由 URL 拆成路径和已解码的 query 参数。 */
+export function parseUrlToObj(url: string): { path: string, query: Record<string, string> } {
+  /** query 分隔符的位置；路径本身允许为空 query。 */
+  const queryStart = url.indexOf('?')
+  /** 不含 query 的页面路径。 */
+  const path = queryStart === -1 ? url : url.slice(0, queryStart)
+  /** 原始 query 字符串，保留值中的后续等号。 */
+  const queryStr = queryStart === -1 ? '' : url.slice(queryStart + 1)
 
   if (!queryStr) {
     return { path, query: {} }
   }
 
+  /** 解码后的路由参数集合。 */
   const query: Record<string, string> = {}
   queryStr.split('&').forEach((item) => {
-    const [key, value] = item.split('=')
-    query[key] = ensureDecodeURIComponent(value)
+    if (!item) {
+      return
+    }
+    /** 当前参数中首个键值分隔符的位置。 */
+    const separator = item.indexOf('=')
+    /** 参数键的原始编码内容。 */
+    const key = separator === -1 ? item : item.slice(0, separator)
+    /** 参数值的原始编码内容。 */
+    const value = separator === -1 ? '' : item.slice(separator + 1)
+    query[ensureDecodeURIComponent(key)] = ensureDecodeURIComponent(value)
   })
   return { path, query }
 }
 
+/** 将原始 query 参数统一编码后拼接到小程序路由路径。 */
 export function parseObjToUrl(path: string, query: Record<string, string>) {
   const queryString = Object.keys(query)
-    .map(key => `${key}=${query[key]}`)
+    .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(query[key])}`)
     .join('&')
   return queryString ? `${path}?${queryString}` : path
 }

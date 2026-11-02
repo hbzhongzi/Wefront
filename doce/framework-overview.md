@@ -1,81 +1,44 @@
 # 微信小程序框架总览
 
-本文档记录精简后的当前架构，属于框架更新与优化文档，统一归档在 `doce/`。路径均相对于小程序根目录。
+本文只记录当前源码可见的架构和模块职责。构建命令、环境配置和部署验收统一维护在 [`docs/framework-handling.md`](../docs/framework-handling.md)；问题及整改状态统一维护在 [`framework-optimization-audit.md`](./framework-optimization-audit.md)。
 
-## 1. 定位
+## 定位
 
-项目是面向个人开发的微信小程序底座，使用 uni-app + Vue 3 + TypeScript。构建目标固定为 `mp-weixin`，不再维护 H5、App 或其他小程序平台适配层。
+项目源码采用 uni-app + Vue 3 + TypeScript，目标产品为微信小程序。当前页面源码包括首页、个人页和水印编辑分包；“今天穿什么”原型仍是独立 HTML，不属于已接入的小程序业务页。
 
-请求服务地址不写死在源码中：`src/http/alova.ts` 从 `VITE_SERVER_BASEURL` 读取根地址，未配置时使用当前环境的相对地址。
-
-## 2. 启动链路
+## 启动与请求链路
 
 ```text
 src/main.ts
   -> createSSRApp(App)
   -> Pinia、路由拦截、uv-ui、全局样式
-  -> 页面生命周期
-  -> src/api/*
-  -> src/http/alova.ts
+  -> src/App.vue 应用生命周期与初始化
+  -> 页面 -> src/api/<module> -> src/http/alova.ts
 ```
 
-`src/App.vue` 负责应用级生命周期和基础初始化。`src/store/app.ts` 保存应用信息、启动参数、系统信息和本地分享配置；分享配置不再请求远程平台接口。
+请求层从 `VITE_SERVER_BASEURL` 读取后端根地址，统一承接 Token、请求头、业务响应解包和错误处理。具体变量加载路径、mode 与构建器关系需以实际 Vite 配置为准；当前工作区根级构建配置缺失，见整体审计。
 
-## 3. 目录与职责
+## 模块职责
 
 | 路径 | 职责 |
 | --- | --- |
-| `src/pages/` | 主包页面，目前包含首页和个人页 |
-| `src/subpackages/watermark/` | 图片水印编辑分包 |
-| `src/api/user/` | 用户初始化、登录相关接口 |
-| `src/api/upload/` | 图片上传接口 |
-| `src/http/alova.ts` | 请求根地址、Token、统一响应处理 |
-| `src/store/app.ts` | 应用信息、系统信息、本地分享配置 |
-| `src/store/user.ts` | 用户信息与登录态 |
-| `src/store/refresh.ts` | 跨页面刷新标记 |
-| `src/router/` | 路由拦截、登录策略和跳转参数 |
-| `src/components/navbar/` | 可复用导航栏 |
-| `src/utils/` | storage、token、提示、日志和路由辅助函数 |
-| `pages.config.ts` | 页面、TabBar 与分包配置 |
-| `vite.config.ts` | 微信构建、自动导入、组件和页面扫描 |
+| `src/pages/` | 主包页面与页面级交互编排 |
+| `src/subpackages/watermark/` | 水印编辑功能 |
+| `src/api/user/`、`src/api/upload/` | 用户及文件上传接口 |
+| `src/http/` | Alova 请求实例及响应/错误处理 |
+| `src/store/` | 应用、用户和跨页面刷新状态 |
+| `src/router/` | 页面导航拦截、登录策略和跳转参数 |
+| `src/components/` | 跨页面复用组件，目前包含 navbar |
+| `src/utils/` | 缓存、Token、提示、日志、平台和系统信息等基础工具 |
+| `src/tabbar/` | 原生/自定义 TabBar 配置与状态 |
+| `env/` | 环境变量文件；是否被构建器读取需核对 `envDir` |
 
-## 4. 页面与分包
+## 关键边界
 
-页面使用 `definePage` 声明页面配置，UniPages 自动生成路由相关文件。当前只有一个业务分包：
+- 页面负责布局和交互编排；接口通过 `src/api/`，不在页面拼接服务端 URL。
+- 跨页面共享状态放 Store；短生命周期状态留在页面或组件。
+- Token 和缓存复用现有工具，不在页面另建持久化机制。
+- 主包/分包页面清单与生成文件由构建插件负责；生成路径应在恢复的构建配置中明确。
+- 设计稿落地时先映射设计 Token 和页面结构；仅把稳定的跨页面模式抽为全局组件，避免把单页业务逻辑塞进底层框架。
 
-```text
-src/subpackages/watermark/
-```
-
-新增分包时，同时在 `vite.config.ts` 的 `UniPages({ subPackages })` 中登记；部署和产物验收流程见 [`docs/framework-handling.md`](../docs/framework-handling.md)。
-
-## 5. 请求层
-
-业务页面通过 `src/api/<module>/index.ts` 调用请求，不直接拼接 URL 或调用 `uni.request`。
-
-```ts
-import { http } from '@/http/alova'
-
-export const fetchUser = () => http.Get('/user')
-```
-
-请求层提供：
-
-- `VITE_SERVER_BASEURL` 动态根地址
-- Token 读取和刷新
-- `meta.ignoreAuth` 跳过鉴权
-- `{ code, msg, data }` 响应解包
-- 上传请求类型支持
-
-当前 API 模块只有 `user` 和 `upload`。后续新增接口时按模块建立 `index.ts` 与 `types.ts`。
-
-## 6. 状态与导航
-
-- Pinia 负责应用、用户和刷新状态。
-- 用户 Token 通过现有 storage/token 工具持久化。
-- 路由拦截器统一处理登录校验、TabBar 跳转和 redirect 参数。
-- TabBar 使用微信原生配置；页面级导航使用 `navbar` 组件时再引入。
-
-## 7. 已移除能力
-
-精简后不再包含广告、订阅引导、埋点上报、反馈、有效期、通用键值服务、动态平台配置、网页容器和模板示例分包，也不再保留 H5 代理及其他平台构建脚本。需要这些能力时，应按具体业务重新设计并接入，而不是恢复通用模板代码。
+当前可见源码问题及建议整改顺序详见[框架整体排查与优化建议](./framework-optimization-audit.md)。

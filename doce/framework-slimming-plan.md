@@ -1,69 +1,23 @@
-# 微信小程序个人开发框架精简方案
+# 框架精简记录
 
-## 目标
+本文仅保留从通用 uni-app 模板收敛为个人微信小程序底座的历史范围和结果。当前结构见 [`framework-overview.md`](./framework-overview.md)，构建/部署流程见 [`docs/framework-handling.md`](../docs/framework-handling.md)，后续风险整改见 [`framework-optimization-audit.md`](./framework-optimization-audit.md)。
 
-将通用 uni-app 模板收敛为个人微信小程序开发底座：只维护 `mp-weixin` 构建链路，保留登录、请求、状态管理和当前业务需要的水印能力，移除低频通用模块。
+## 精简目标
 
-## 已落地内容
+只维护微信小程序所需的构建和运行能力，移除当前业务不使用的通用模板模块；保留登录、请求、状态管理、基础工具和当前水印能力。
 
-### 已删除的源码模块
+## 已移除范围
 
 - API：`common`、`expiry`、`feedback`、`kv`、`platform`、`tracking`
 - 组件：`ad`、`add-miniprogram`、`fixed-bottom-wrapper`、`subscribe-popup`
-- 页面与分包：`src/pages/web/web.vue`、`src/subpackages/template/`
-- 工具：`src/utils/report.ts`、`src/utils/lodash.ts`
+- 页面/分包：网页容器页、模板示例分包
+- 工具：`report.ts`、`lodash.ts`
+- 运行时：启动埋点、远程应用配置与分享配置请求、H5 代理及非目标平台适配
 
-### 已完成的运行时调整
+## 保留约定
 
-- 删除启动时埋点、远程应用配置和远程分享配置请求。
-- `src/store/app.ts` 改用本地静态 `shareConfig`。
-- 首页和个人页移除已删除组件的引用。
-- `vite.config.ts` 与 `pages.config.ts` 只保留 `watermark` 分包。
-- `src/utils/index.ts` 仅保留路由拦截所需工具。
+- 用户、上传、请求、应用状态和刷新状态按需保留；删除某项能力时同时清理其 API、Store、页面入口和依赖引用。
+- 水印功能当前存在于 `src/subpackages/watermark/`；是否继续保留由实际产品需要决定。
+- 后端地址使用环境变量，不在源码中写入具体服务域名。
 
-### 已完成的构建与依赖调整
-
-- `package.json` 仅保留微信小程序依赖和脚本。
-- 移除 H5 代理、构建时间注入、构建分析以及其他平台依赖。
-- 默认构建目标已统一为 `mp-weixin`，具体命令统一记录在 `docs/framework-handling.md`。
-- `docs/quick-reference.md`、`docs/framework-handling.md`、`docs/README.md`、`README.md` 已同步更新。
-- `doce/framework-overview.md` 与本文件统一记录框架优化和精简结果。
-
-## 请求地址策略
-
-请求层不再固定指向 `https://mini-tools.hnfuhua.cn/` 或任何模板域名。`src/http/alova.ts` 读取环境变量：
-
-```dotenv
-VITE_SERVER_BASEURL='https://api.example.com/api'
-```
-
-未配置时使用当前环境的相对地址；测试和生产环境通过 `env/.env.test`、`env/.env.production` 或对应的 `.local` 文件覆盖。
-
-## 当前保留结构
-
-```text
-src/
-  api/user/       # 用户与登录
-  api/upload/     # 图片上传
-  components/     # 当前保留 navbar
-  http/           # Alova 请求层
-  pages/          # 首页、个人页等主包页面
-  router/         # 路由拦截
-  store/          # app、user、refresh
-  subpackages/
-    watermark/    # 水印编辑
-  utils/          # storage、token、tips、logger 等基础工具
-```
-
-## 后续按业务删除
-
-以下能力仍可按具体项目继续移除，但必须连同引用、依赖和页面入口一起处理：
-
-- 不需要登录时：删除 `src/api/user/`、`src/store/user.ts` 和登录拦截配置。
-- 不需要上传或水印时：删除 `src/api/upload/`、`src/subpackages/watermark/` 及首页入口。
-- 不需要自定义导航时：删除 `src/components/navbar/` 并改用原生导航栏。
-- 不需要后端接口时：删除 `src/http/` 和业务 API，保留本地状态工具。
-
-## 验收文档
-
-部署、构建和验收命令统一维护在 [`docs/framework-handling.md`](../docs/framework-handling.md)，本文件只记录精简和优化结果。当前工作区未安装依赖时，类型检查和 lint 需要在安装依赖后执行。
+本记录不再重复列出目录树、命令表、env 样例或逐项优化建议；这些内容各自以框架总览、构建说明和整体审计为准。

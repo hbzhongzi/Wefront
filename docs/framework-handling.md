@@ -2,6 +2,8 @@
 
 本文档只适用于当前 uni-app + Vue 3 + TypeScript 微信小程序项目。所有路径均相对于小程序根目录。
 
+注意：当前工作区的 `package.json`、`vite.config.ts` 等构建入口处于删除状态。以下命令和产物路径是项目预期约定，需在构建配置恢复后才能执行验证；现状见[整体审计](../doce/framework-optimization-audit.md)。
+
 ## 1. 环境
 
 - Node.js 20 或更高版本
@@ -53,7 +55,7 @@ VITE_WX_APPID='wx-your-appid'
 VITE_SERVER_BASEURL='https://api.example.com/api'
 ```
 
-`VITE_SERVER_BASEURL` 是可替换的后端根地址，代码不会固定使用模板域名。不同环境使用 `.env.test`、`.env.production` 及其 `.local` 覆盖文件。
+`VITE_SERVER_BASEURL` 是必填的后端根地址，代码不会固定使用模板域名，也不会在未配置时退回相对地址。请分别在 `env/.env.development.local`、`env/.env.test.local`、`env/.env.production.local` 配置各环境真实地址；提交前需确认这些本地文件已被 Git 忽略且未提交真实域名（当前工作区 `.gitignore` 处于删除状态）。对应的 `.env.*` 文件保留空值作为变量声明，发起请求时若地址缺失会报出明确配置错误。
 
 ## 5. 页面与分包验收
 

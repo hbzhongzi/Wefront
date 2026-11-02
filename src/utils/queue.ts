@@ -94,7 +94,8 @@ class Queue {
   ): void {
     this.runningCount++
 
-    task()
+    Promise.resolve()
+      .then(task)
       .then(resolve)
       .catch(reject)
       .finally(() => {
@@ -254,10 +255,14 @@ class Queue {
    * @returns Promise<void>
    */
   async waitForAll(): Promise<void> {
-    return new Promise<void>((resolve) => {
+    return new Promise<void>((resolve, reject) => {
+      /** 轮询等待期间检查队列是否已暂停且无法自然清空。 */
       const checkComplete = () => {
         if (this.isEmpty()) {
           resolve()
+        }
+        else if (this.isStopped && this.waitingQueue.length > 0) {
+          reject(new Error('Queue is paused with pending tasks'))
         }
         else {
           setTimeout(checkComplete, 10)

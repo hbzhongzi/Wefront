@@ -123,36 +123,43 @@ class Tips {
     }
 
     return new Promise<boolean>((resolve, reject) => {
-      uni.showModal({
-        title: args.title || '',
-        content: args.content || '',
-        showCancel: args.showCancel || false,
-        cancelText: args.cancelText || '取消',
-        cancelColor: args.cancelColor || '#000000',
-        confirmText: args.confirmText || '确定',
-        confirmColor: args.confirmColor || '#1688f8',
-        success: (res: UniApp.ShowModalRes) => {
-          args.success?.(res)
-          if (!args.success) {
-            if (res.confirm) {
-              resolve(true)
+      try {
+        uni.showModal({
+          title: args.title || '',
+          content: args.content || '',
+          showCancel: args.showCancel || false,
+          cancelText: args.cancelText || '取消',
+          cancelColor: args.cancelColor || '#000000',
+          confirmText: args.confirmText || '确定',
+          confirmColor: args.confirmColor || '#1688f8',
+          success: (res: UniApp.ShowModalRes) => {
+            try {
+              args.success?.(res)
+              resolve(Boolean(res.confirm))
             }
-            else if (res.cancel) {
-              resolve(false)
+            catch (error) {
+              reject(error)
             }
-          }
-        },
-        fail: (err: any) => {
-          args.fail?.(err)
-          if (!args.fail) {
-            reject(err)
-          }
-        },
-        complete: (res: any) => {
-          this.isUsedConfirm = false
-          args.complete?.(res)
-        },
-      })
+          },
+          fail: (err: any) => {
+            try {
+              args.fail?.(err)
+              reject(err)
+            }
+            catch (error) {
+              reject(error)
+            }
+          },
+          complete: (res: any) => {
+            this.isUsedConfirm = false
+            args.complete?.(res)
+          },
+        })
+      }
+      catch (error) {
+        this.isUsedConfirm = false
+        reject(error)
+      }
     })
   }
 

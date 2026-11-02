@@ -16,7 +16,7 @@ const logger = useLogger()
 
 // 配置动态Tag
 export const API_DOMAINS = {
-  DEFAULT: import.meta.env.VITE_SERVER_BASEURL || '',
+  DEFAULT: (import.meta.env.VITE_SERVER_BASEURL || '').trim().replace(/\/+$/, ''),
   SECONDARY: import.meta.env.VITE_API_SECONDARY_URL,
 }
 
@@ -90,6 +90,14 @@ const alovaInstance = createAlova({
       method.baseURL = config.meta.domain
       logger.log('当前域名', method)
       return
+    }
+
+    // 微信小程序请求必须使用已配置的服务端域名，避免空配置时静默请求相对路径。
+    if (!API_DOMAINS.DEFAULT) {
+      /** 未配置后端地址时提供可操作的环境文件指引。 */
+      const message = '未配置 VITE_SERVER_BASEURL，请在 env/.env 对应环境文件中设置后端地址'
+      logger.error(message)
+      throw new Error(message)
     }
 
     const useAuth = config.meta?.ignoreAuth !== true

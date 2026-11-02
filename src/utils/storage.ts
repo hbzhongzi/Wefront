@@ -229,13 +229,9 @@ class Storage {
   removeAll(): void {
     try {
       const prefix = this.getPrefix()
-      let { keys } = uni.getStorageInfoSync()
-      keys = keys
-        .filter(key => ~key.indexOf(prefix))
-        .map((key) => {
-          const reg = new RegExp(prefix, 'gi')
-          return key.replace(reg, '')
-        })
+      const keys = uni.getStorageInfoSync().keys
+        .filter(key => key.startsWith(prefix))
+        .map(key => key.slice(prefix.length))
       keys.forEach((key) => {
         this.remove(key)
       })
